@@ -6,9 +6,9 @@ Am currently using Twitter DMs to send message and rely on iPhone notifications 
 
 It's pretty hard-coded to my requirements but extensibility should be fairly obvious.
 
-Running this everymorning as a Heroku scheduled task.
+Running this every morning as a Heroku scheduled task.
 
-# Weather
+## Weather
 
 Usage 
 
