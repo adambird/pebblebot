@@ -166,6 +166,7 @@ where [options] are:
 EOS
   opt :twitter, "twitter username", type: :string
   opt :pushover, "pushover user key", type: :string
+  opt :suppress_weekends, "flag to indicate whether to suppres weekends"
   stop_on SUB_COMMANDS
 end
 
@@ -187,7 +188,11 @@ def generate_info(command, options)
   end
 end
 
-if info = generate_info(cmd, cmd_opts)
+def can_send?(options)
+  !(options[:suppress_weekends] && [1,6].include?(DateTime.now.wday))
+end
+
+if can_send?(global_opts) && info = generate_info(cmd, cmd_opts)
   SendDirectMessage.new(info, global_opts[:twitter]).execute if global_opts[:twitter_given]
   SendPushoverNotification.new(info, global_opts[:pushover]).execute if global_opts[:pushover_given]
 else
