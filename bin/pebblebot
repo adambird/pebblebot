@@ -13,7 +13,7 @@ class SendDirectMessage
   end
 
   def execute
-    Twitter.update("@#{@user} #{@info.to_message} #{Time.now}")
+    Twitter.update("@#{@user}\n#{@info.to_message}")
     puts "sent message to #{@user}"
   rescue => e
     puts "Error posting to twitter: #{e.message}"
