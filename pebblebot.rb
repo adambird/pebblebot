@@ -2,22 +2,25 @@
 require 'faraday'
 require 'json'
 require 'time'
+require "twitter"
 
 class Send
 
-  def initialize(info)
+  def initialize(info, user="adambird")
     @info = info
+    @user = user
   end
 
   def execute
-    puts @info
+    Twitter.update("D #{user} #{@info} #{Time.now}") rescue Twitter::Error
+    puts "sent message to #{@user}"
   end
 end
 
 class WeatherForecast
 
   def api_key
-    "4f2667bb-0594-46d6-a8b0-3500c5f226b2"
+    ENV['MET_OFFICE_API_KEY']
   end
 
   def forecast_path(location)
