@@ -3,23 +3,55 @@ require 'faraday'
 require 'json'
 require 'date'
 require "twitter"
+require "trollop"
 
-class Send
+class SendDirectMessage
 
-  def initialize(info, user="adambird")
+  def initialize(info, user)
     @info = info
     @user = user
   end
 
   def execute
-    Twitter.update("D #{@user} #{@info} #{Time.now}")
+    Twitter.update("@#{@user} #{@info.to_message} #{Time.now}")
     puts "sent message to #{@user}"
   rescue => e
     puts "Error posting to twitter: #{e.message}"
   end
 end
 
+class SendPushoverNotification
+
+  def initialize(info, user)
+    @info = info
+    @user = user
+  end
+
+  def api_key
+    ENV['PUSHOVER_APP_KEY']
+  end
+
+  def notification_params
+    lines = @info.to_message.split("\n")
+    {
+      token: api_key,
+      user: @user,
+      title: lines[0],
+      message: lines[1..-1].join("\n")
+    }
+  end
+
+  def execute
+    Faraday.post "https://api.pushover.net/1/messages.json", notification_params
+    puts "sent message to pushover"
+  end
+end
+
 class WeatherForecast
+
+  def initialize(location)
+    @location = location
+  end
 
   def api_key
     ENV['MET_OFFICE_API_KEY']
@@ -37,7 +69,7 @@ class WeatherForecast
 
   def to_message
     # 350299 is Met office location for Beeston
-    forecast = get_forecast(350299)
+    forecast = get_forecast(@location)
     [ 
       "#{forecast.today_date} - #{forecast.location_name}",
       "#{forecast.today_temp} #{forecast.today_weather_type}",
@@ -122,17 +154,43 @@ class WeatherForecast
   end
 end
 
+SUB_COMMANDS = %w(weather)
+global_opts = Trollop::options do
+  version "pebblebot 0.1 (c) 2013 Adam Bird"
+  banner <<-EOS
+Send notifications
 
-case ARGV[0]
-when "weather" || "w"
-  Send.new(WeatherForecast.new.to_message).execute
-else
-  puts <<-EOF
-Unrecognised command
-
-Usage: 
-  pebblebot w | weather
-EOF
+Usage:
+       pebblebot [options] <command> [command_options]
+where [options] are:
+EOS
+  opt :twitter, "twitter username", type: :string
+  opt :pushover, "pushover user key", type: :string
+  stop_on SUB_COMMANDS
 end
 
+cmd_opts = case cmd = ARGV.shift
+  when "weather"
+    Trollop::options do
+      opt :location, "Met Office location id", type: :integer
+    end
+  else
+    Trollop::die "unknown subcommand #{cmd.inspect}"
+  end
+
+def generate_info(command, options)
+  case command
+  when "weather"
+    WeatherForecast.new(options[:location])
+  else
+    puts "no info generated"
+  end
+end
+
+if info = generate_info(cmd, cmd_opts)
+  SendDirectMessage.new(info, global_opts[:twitter]).execute if global_opts[:twitter_given]
+  SendPushoverNotification.new(info, global_opts[:pushover]).execute if global_opts[:pushover_given]
+else
+  puts "no info to send"
+end
 
