@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'faraday'
 require 'json'
-require 'time'
+require 'date'
 require "twitter"
 
 class Send
@@ -12,8 +12,10 @@ class Send
   end
 
   def execute
-    Twitter.update("D #{user} #{@info} #{Time.now}") rescue Twitter::Error
+    Twitter.update("D #{@user} #{@info} #{Time.now}")
     puts "sent message to #{@user}"
+  rescue => e
+    puts "Error posting to twitter: #{e.message}"
   end
 end
 
@@ -126,7 +128,7 @@ when "weather" || "w"
   Send.new(WeatherForecast.new.to_message).execute
 else
   puts <<-EOF
-Unrecognosed command
+Unrecognised command
 
 Usage: 
   pebblebot w | weather
