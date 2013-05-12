@@ -10,6 +10,10 @@ Running this everymorning as a Heroku scheduled task.
 
 # Weather
 
+Usage 
+
+    bin/pebblebot weather
+
 This gets five-day forecast from the [UK Met Office](http://www.metoffice.gov.uk) and sends me the current day info that's relevant to cycling, eg
 
     Sun 12 - BEESTON
