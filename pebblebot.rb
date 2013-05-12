@@ -54,7 +54,7 @@ class WeatherForecast
     end
 
     def today_date
-      Date.parse(today[:value]).strftime("%a %d")
+      DateTime.parse(today[:value]).strftime("%a %d")
     end
 
     def today_day_report
