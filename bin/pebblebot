@@ -189,7 +189,7 @@ def generate_info(command, options)
 end
 
 def can_send?(options)
-  !(options[:suppress_weekends] && [1,6].include?(DateTime.now.wday))
+  !(options[:suppress_weekends] && [0,6].include?(DateTime.now.wday))
 end
 
 if can_send?(global_opts) && info = generate_info(cmd, cmd_opts)
